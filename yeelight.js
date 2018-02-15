@@ -87,7 +87,6 @@ support: get_prop set_default set_power toggle set_bright start_cf stop_cf set_s
         return device;
     }
     discover(){
-        //TODO
         let msg = "M-SEARCH * HTTP/1.1\r\n" 
         msg = msg + "HOST: 239.255.255.250:1982\r\n"
         msg = msg + "MAN: \"ssdp:discover\"\r\n"
@@ -111,8 +110,12 @@ class YeelightDevice extends EventEmitter{
         this.setStatus("not_connect");
         this.connect(deviceInfo.host,deviceInfo.port);
     }
-    getInfo(){
-        return this.deviceInfo;
+    getInfo(field=null){
+        if(field===null){
+            return this.deviceInfo;
+        }else{
+            return this.deviceInfo[field];
+        }
     }
     getId(){
         return this.deviceInfo.id;
@@ -159,11 +162,17 @@ class YeelightDevice extends EventEmitter{
             socket.on("end",reject);
             let my_carrier = carrier.carry(socket);
             my_carrier.on('line',(line)=>{
-                console.log('got one line: ' + line);
                 let ret;
                 try{
                     ret=JSON.parse(line);
-                }catch(e){}
+                }catch(e){
+                    console.log('got one error line: ' , line);
+                    return;
+                }
+                if(ret.method==="props"){
+                    this.deviceInfo=Object.assign(this.deviceInfo,ret.params);
+                    //console.log(this.deviceInfo);
+                }
                 this.emit("message",ret);
             });
             this.socket=socket;
@@ -175,7 +184,16 @@ if(module === require.main) {
     let controller=YeelightController.getInstance();
     controller.discover();
     controller.on("new_device",(device)=>{
-        device.send("toggle");
+        if(device.getInfo("model")!=="ceiling3"){
+            return;
+        }
+        //device.send("toggle");
+        //
+        //把当前状态设置成默认值
+        //device.send("set_default");
+        //打开夜灯模式
+        //device.send("set_scene","nightlight",100);
+        device.send("set_bright",40);
         device.on("message",(message)=>{
             console.log("on message",message);
         });
