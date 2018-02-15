@@ -1,0 +1,6 @@
+module.exports={
+    bot_service_uri:"http://duer-iot.wangp.org",
+    local_ip:"192.168.1.220",
+    local_port:"3000",
+
+};

@@ -1,0 +1,25 @@
+{
+  "name": "duer_iot_local_bridge",
+  "version": "1.0.0",
+  "description": "![流程](design.png)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@wangp.org:wangpeng/duer_iot_local_bridge.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "miio": "^0.15.5",
+    "request": "^2.83.0",
+    "socket.io": "^2.0.4",
+    "socket.io-client": "^2.0.4"
+  }
+}
