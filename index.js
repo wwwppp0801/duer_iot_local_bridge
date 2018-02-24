@@ -55,7 +55,7 @@ function getStorage(){
         if (fs.existsSync(__dirname + "/" + storageFilename)) {
             storage = require("./" + storageFilename);
             if (storage) {
-                config = Object.assign(config, storage);
+                Object.assign(config, storage);
             }
         }else{
             storage={};
@@ -105,10 +105,11 @@ function initConnection(){
         socket.removeAllListeners();
         socket.close();
     }
-    let socket=io(config.bot_service_uri,{
+    socket=io(config.bot_service_uri,{
         autoConnect:true,
         reconnection:true,
     });
+    socket.id=utils.uuid();
     console.log("create new socket:",socket.id);
     for(let eventName of ["connect","connect_error","connect_timeout",
         "error","disconnect","reconnect","reconnect_attempt",
@@ -117,21 +118,27 @@ function initConnection(){
     ]){
         socket.on(eventName,()=>{console.log("socket ",socket.id,eventName)})
     }
-    socket.emit("login",getStorage().key);
-    
     socket.on("login_success",()=>{
+        console.log("on login_success!");
         updateDevicesToBotService(socket);
     });
+    socket.on("login_fail",()=>{
+        console.log("on login_fail!");
+    });
+    socket.emit("login",{key:getStorage().key});
+    
 
 }
 
 let devices=[];
 
 function updateDevicesToBotService(socket){
+    console.log("update_devices: ",devices);
     socket.emit("update_devices",devices);
 }
 
 if(getStorage().key){
+    console.log("connection key:",getStorage().key);
     initConnection();
 }
 
