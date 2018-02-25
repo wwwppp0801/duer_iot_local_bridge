@@ -56,6 +56,13 @@ app.post("/change_name",async (req,res,next)=>{
         device.send("set_name",req.body.name);
     });
     await YeelightController.getInstance().discover(1100);
+    updateDevicesToBotService();
+    res.redirect("/");
+});
+
+app.get("/refresh_devices",async (req,res,next)=>{
+    await YeelightController.getInstance().discover(2000);
+    updateDevicesToBotService();
     res.redirect("/");
 });
 
@@ -138,9 +145,11 @@ function initConnection(){
             }
         });
     }
-    socket.on("login_success",()=>{
+    socket.on("login_success",async ()=>{
         console.log("on login_success!");
-        updateDevicesToBotService(socket);
+        let controller=YeelightController.getInstance();
+        await controller.discover();
+        updateDevicesToBotService();
     });
     socket.on("login_fail",()=>{
         console.log("on login_fail!");
@@ -167,14 +176,14 @@ function initConnection(){
 }
 
 
-async function updateDevicesToBotService(socket){
-    //TODO update devices
+async function updateDevicesToBotService(){
+    //update devices
     let controller=YeelightController.getInstance();
-    await controller.discover();
     controller.getDevices();
-
-    console.log("update_devices: ",{devices:controller.getDevices().map(device=>device.getInfo())});
-    socket.emit("update_devices",{devices:controller.getDevices().map(device=>device.getInfo())});
+    if(socket){
+        console.log("update_devices: ",{devices:controller.getDevices().map(device=>device.getInfo())});
+        socket.emit("update_devices",{devices:controller.getDevices().map(device=>device.getInfo())});
+    }
 }
 
 if(getStorage().key){
