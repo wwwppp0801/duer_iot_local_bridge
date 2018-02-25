@@ -26,6 +26,7 @@ class YeelightController extends EventEmitter{
                 if(info.id === deviceInfo.id){
                     if(info.host === deviceInfo.host &&
                         info.port === deviceInfo.port){
+                        device.setInfo(deviceInfo);
                         console.log("ingore device id", info.id);
                         return;
                     }else{
@@ -86,7 +87,7 @@ support: get_prop set_default set_power toggle set_bright start_cf stop_cf set_s
         this.emit("new_device",device);
         return device;
     }
-    discover(){
+    discover(timeout=3000){
         return new Promise((resolve,reject)=>{
             let msg = "M-SEARCH * HTTP/1.1\r\n" 
             msg = msg + "HOST: 239.255.255.250:1982\r\n"
@@ -98,7 +99,7 @@ support: get_prop set_default set_power toggle set_bright start_cf stop_cf set_s
             setTimeout(()=>{
                 clearInterval(intervalId);
                 resolve();
-            },3000);
+            },timeout);
         });
     }
 }
@@ -109,9 +110,15 @@ class YeelightDevice extends EventEmitter{
     }
     constructor(deviceInfo){
         super();
+        this.on("message",(message)=>{
+            console.log("on message",message);
+        });
         this.deviceInfo=deviceInfo;
         this.setStatus("not_connect");
         this.connect(deviceInfo.host,deviceInfo.port);
+    }
+    setInfo(deviceInfo){
+        Object.assign(this.deviceInfo,deviceInfo);
     }
     getInfo(field=null){
         if(field===null){

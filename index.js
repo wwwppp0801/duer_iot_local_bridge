@@ -45,6 +45,20 @@ app.get("/control_key_callback",(req,res,next)=>{
     res.redirect("/");
 });
 
+app.post("/change_name",async (req,res,next)=>{
+    //store req.query.key
+
+    YeelightController.getInstance().getDevices().forEach((device)=>{
+        //console.log("compare device;",device.getId(),command.device_id);
+        if(device.getId()!=req.body.id){
+            return;
+        }
+        device.send("set_name",req.body.name);
+    });
+    await YeelightController.getInstance().discover(1100);
+    res.redirect("/");
+});
+
 app.get("/",(req,res,next)=>{
     res.render("index",{
         storage:getStorage(),
