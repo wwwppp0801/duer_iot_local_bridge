@@ -7,6 +7,9 @@ const fs = require('fs');
 const ejs = require("ejs");
 const utils = require("./utils");
 const io = require('socket.io-client');
+const YeelightController = require('./yeelight');
+
+
 
 
 
@@ -45,6 +48,7 @@ app.get("/control_key_callback",(req,res,next)=>{
 app.get("/",(req,res,next)=>{
     res.render("index",{
         storage:getStorage(),
+        devices:YeelightController.getInstance().getDevices(),
     });
 });
 
@@ -73,9 +77,6 @@ function setStorage(key, value) {
     return storage;
 }
 
-app.get("/",(req,res,next)=>{
-    //TODO index, show devices
-});
 
 
 let server = require('http').Server(app);
@@ -116,7 +117,12 @@ function initConnection(){
         "reconnecting","reconnect_error","reconnect_failed",
         "ping","pong",
     ]){
-        socket.on(eventName,()=>{console.log("socket ",socket.id,eventName)})
+        socket.on(eventName,()=>{
+            console.log("socket ",socket.id,eventName);
+            if(["connect","reconnect"].indexOf(eventName)!=-1){
+                socket.emit("login",{key:getStorage().key});
+            }
+        });
     }
     socket.on("login_success",()=>{
         console.log("on login_success!");
@@ -125,16 +131,36 @@ function initConnection(){
     socket.on("login_fail",()=>{
         console.log("on login_fail!");
     });
-    socket.emit("login",{key:getStorage().key});
-    
+    socket.on("command",(command)=>{
+        console.log("on command",command);
+        YeelightController.getInstance().getDevices().forEach((device)=>{
+            //console.log("compare device;",device.getId(),command.device_id);
+            if(device.getId()!=command.device_id){
+                return;
+            }
+            console.log("find device",device.getId());
+            if(command.request.header.name=="TurnOnRequest"){
+                console.log("send power on");
+                device.send("set_power","on");
+            }
+            if(command.request.header.name=="TurnOffRequest"){
+                console.log("send power off");
+                device.send("set_power","off");
+            }
+        });
+    });
 
 }
 
-let devices=[];
 
-function updateDevicesToBotService(socket){
-    console.log("update_devices: ",devices);
-    socket.emit("update_devices",devices);
+async function updateDevicesToBotService(socket){
+    //TODO update devices
+    let controller=YeelightController.getInstance();
+    await controller.discover();
+    controller.getDevices();
+
+    console.log("update_devices: ",{devices:controller.getDevices().map(device=>device.getInfo())});
+    socket.emit("update_devices",{devices:controller.getDevices().map(device=>device.getInfo())});
 }
 
 if(getStorage().key){

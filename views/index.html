@@ -9,7 +9,15 @@
     <h1>storage</h1>
     <%= JSON.stringify(storage)%>
     <br/>
-    <a href="/get_control_key">重新获得key</a>
+    <h1>设备列表</h1>
+    <ul>
+        <% devices.forEach((device)=>{ %>
+        <li><%=JSON.stringify(device.getInfo())%></li>
+        <% }) %>
+    </ul>
+    <div>
+        <a href="/get_control_key">重新获得key</a>
+    </div>
 </body>
 </html>
 
