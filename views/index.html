@@ -8,8 +8,29 @@
     
     <h1>storage</h1>
     <%= JSON.stringify(storage)%>
-    <br/>
-    <a href="/get_control_key">重新获得key</a>
+    <div>
+        <a href="/get_control_key">重新获得key</a>
+    </div>
+    <h1>设备列表</h1>
+    <div>
+        <a href="/refresh_devices">刷新设备</a>
+    </div>
+    <ul>
+        <% devices.forEach((device)=>{ %>
+
+        <li>
+            <form action="/change_name" method="post">
+                <input type="hidden" name="id" value="<%=device.getId()%>"/>
+                <input type="text" name="name" value="<%=device.getInfo("name")%>"/>
+                <input type="submit"/>
+            </form>
+            <span style="font-size:12px"><%=JSON.stringify(device.getInfo())%></span>
+        </li>
+        <% }) %>
+    </ul>
+    <div>
+        <a href="/refresh_devices">刷新设备</a>
+    </div>
 </body>
 </html>
 

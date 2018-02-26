@@ -26,6 +26,7 @@ class YeelightController extends EventEmitter{
                 if(info.id === deviceInfo.id){
                     if(info.host === deviceInfo.host &&
                         info.port === deviceInfo.port){
+                        device.setInfo(deviceInfo);
                         console.log("ingore device id", info.id);
                         return;
                     }else{
@@ -86,17 +87,20 @@ support: get_prop set_default set_power toggle set_bright start_cf stop_cf set_s
         this.emit("new_device",device);
         return device;
     }
-    discover(){
-        let msg = "M-SEARCH * HTTP/1.1\r\n" 
-        msg = msg + "HOST: 239.255.255.250:1982\r\n"
-        msg = msg + "MAN: \"ssdp:discover\"\r\n"
-        msg = msg + "ST: wifi_bulb"
-        let intervalId=setInterval(()=>{
-            udpSocket.send(Buffer.from(msg),1982,"239.255.255.250");
-        },500);
-        setTimeout(()=>{
-            clearInterval(intervalId);
-        },3000);
+    discover(timeout=3000){
+        return new Promise((resolve,reject)=>{
+            let msg = "M-SEARCH * HTTP/1.1\r\n" 
+            msg = msg + "HOST: 239.255.255.250:1982\r\n"
+            msg = msg + "MAN: \"ssdp:discover\"\r\n"
+            msg = msg + "ST: wifi_bulb"
+            let intervalId=setInterval(()=>{
+                udpSocket.send(Buffer.from(msg),1982,"239.255.255.250");
+            },500);
+            setTimeout(()=>{
+                clearInterval(intervalId);
+                resolve();
+            },timeout);
+        });
     }
 }
 
@@ -106,9 +110,15 @@ class YeelightDevice extends EventEmitter{
     }
     constructor(deviceInfo){
         super();
+        this.on("message",(message)=>{
+            console.log("on message",message);
+        });
         this.deviceInfo=deviceInfo;
         this.setStatus("not_connect");
         this.connect(deviceInfo.host,deviceInfo.port);
+    }
+    setInfo(deviceInfo){
+        Object.assign(this.deviceInfo,deviceInfo);
     }
     getInfo(field=null){
         if(field===null){
@@ -180,12 +190,18 @@ class YeelightDevice extends EventEmitter{
     }
 }
 
+module.exports=YeelightController;
+
 if(module === require.main) {
     let controller=YeelightController.getInstance();
     controller.discover();
     controller.on("new_device",(device)=>{
-        if(device.getInfo("model")!=="ceiling3"){
-            return;
+        console.log("new_device",device);
+        if(device.getInfo("model")==="ceiling3"){
+            device.send("set_name","书房的灯");
+        }
+        if(device.getInfo("model")==="stripe"){
+            device.send("set_name","灯带");
         }
         //device.send("toggle");
         //
@@ -193,7 +209,7 @@ if(module === require.main) {
         //device.send("set_default");
         //打开夜灯模式
         //device.send("set_scene","nightlight",100);
-        device.send("set_bright",40);
+        //device.send("set_bright",40);
         device.on("message",(message)=>{
             console.log("on message",message);
         });
