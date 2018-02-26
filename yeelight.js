@@ -199,3 +199,5 @@ if(module === require.main) {
         });
     });
 }
+module.exports.YeelightController=YeelightController;
+module.exports.YeelightDevice=YeelightDevice;
