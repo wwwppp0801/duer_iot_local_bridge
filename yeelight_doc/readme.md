@@ -16,11 +16,20 @@
 {"id":1,"method":"toggle"}
 ```
 
+### 打开/关闭
+
+```javascript
+{"id":1,"method":"set_power","params":["on"]};
+{"id":1,"method":"set_power","params":["off"]};
+```
+
+
 ### 调亮度
 
 ```javascript
 {"id":1,"method":"set_bright","params":[40]};
 ```
+
 
 
 ### 打开夜灯模式
