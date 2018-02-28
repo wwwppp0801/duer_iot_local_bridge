@@ -130,6 +130,15 @@ class YeelightDevice extends EventEmitter{
     getId(){
         return this.deviceInfo.id;
     }
+    getActiveBright(){
+        return new Promise((resolve,reject)=>{
+            this.once("message",(message)=>{
+                // { id: 0, result: [ '40' ] }
+                resolve(parseInt(message.result[0],10));
+            });
+            this.send("get_prop","active_bright");
+        });
+    }
     
     send(method,...args){
         //{ "id": 1, "method": "set_power", "params":["on", "smooth", 500]}
@@ -196,13 +205,18 @@ if(module === require.main) {
     let controller=YeelightController.getInstance();
     controller.discover();
     controller.on("new_device",(device)=>{
-        console.log("new_device",device);
+        console.log("new_device",device.getId());
         if(device.getInfo("model")==="ceiling3"){
-            device.send("set_name","书房的灯");
+            ///device.send("set_name","书房的灯");
+            //device.send("get_prop","active_bright");
+            device.send("set_power", "on","smooth", 500, 1);
+                    
         }
+        /*
         if(device.getInfo("model")==="stripe"){
             device.send("set_name","灯带");
         }
+        */
         //device.send("toggle");
         //
         //把当前状态设置成默认值

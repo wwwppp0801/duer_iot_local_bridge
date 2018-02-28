@@ -42,6 +42,7 @@ app.get("/control_key_callback",(req,res,next)=>{
         return;
     }
     setStorage("key",req.query.key);
+    initConnection();
     res.redirect("/");
 });
 
@@ -156,7 +157,7 @@ function initConnection(){
     });
     socket.on("command",(command)=>{
         console.log("on command",command);
-        YeelightController.getInstance().getDevices().forEach((device)=>{
+        YeelightController.getInstance().getDevices().forEach(async (device)=>{
             //console.log("compare device;",device.getId(),command.device_id);
             if(device.getId()!=command.device_id){
                 return;
@@ -169,6 +170,28 @@ function initConnection(){
             if(command.request.header.name=="TurnOffRequest"){
                 console.log("send power off");
                 device.send("set_power","off");
+            }
+            if(command.request.header.name=="IncrementBrightnessPercentageRequest"){
+                //console.log("send power off");
+                //device.send("set_power","off");
+                let bright = await device.getActiveBright();
+                if(bright==100){
+                    device.send("set_power", "on","smooth", 500, 1);
+                }
+                device.send("set_bright",Math.min(bright+30,100));
+            }
+            if(command.request.header.name=="DecrementBrightnessPercentageRequest"){
+                //console.log("send power off");
+                //device.send("set_power","off");
+                let bright = await device.getActiveBright();
+                if(bright<=10){
+                    device.send("set_power", "on","smooth", 500, 5);
+                }
+                
+                
+                //device.send("set_scene","nightlight",100);
+                
+                device.send("set_bright",Math.max(bright-30,0));
             }
         });
     });
