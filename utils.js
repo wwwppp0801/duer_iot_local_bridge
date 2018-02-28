@@ -6,6 +6,15 @@ function uuid() {
   });
 }
 
+function sleep(timeInMs){
+    return new Promise((resolve,reject)=>{
+        setTimeout(()=>{
+            resolve();
+        },timeInMs);
+    });
+}
+
 module.exports={
     uuid:uuid,
+    sleep:sleep,
 };

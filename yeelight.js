@@ -206,6 +206,7 @@ if(module === require.main) {
     controller.discover();
     controller.on("new_device",(device)=>{
         console.log("new_device",device.getId());
+        /*
         if(device.getInfo("model")==="ceiling3"){
             ///device.send("set_name","书房的灯");
             //device.send("get_prop","active_bright");
@@ -216,16 +217,27 @@ if(module === require.main) {
         if(device.getInfo("model")==="stripe"){
             device.send("set_name","灯带");
         }
+        if(device.getInfo("model")!=="ceiling3"){
+            return;
+        }
         */
+        //开关
         //device.send("toggle");
         //
         //把当前状态设置成默认值
         //device.send("set_default");
         //打开夜灯模式
         //device.send("set_scene","nightlight",100);
+        //调亮度
         //device.send("set_bright",40);
+        //打开
+        //device.send("set_power","off");
+        //关闭
+        //device.send("set_power","off");
         device.on("message",(message)=>{
             console.log("on message",message);
         });
     });
 }
+module.exports.YeelightController=YeelightController;
+module.exports.YeelightDevice=YeelightDevice;
