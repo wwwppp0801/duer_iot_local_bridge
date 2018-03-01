@@ -196,6 +196,10 @@ class YeelightDevice extends EventEmitter{
             });
             this.socket=socket;
         });
+        this.connectedPromise.catch(e=>{
+            console.log("reconnect",host,port);
+            this.connect(host,port);
+        });
     }
 }
 
