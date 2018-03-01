@@ -137,7 +137,7 @@ function initConnection(){
     for(let eventName of ["connect","connect_error","connect_timeout",
         "error","disconnect","reconnect","reconnect_attempt",
         "reconnecting","reconnect_error","reconnect_failed",
-        "ping","pong",
+        //"ping","pong",
     ]){
         socket.on(eventName,()=>{
             console.log("socket ",socket.id,eventName);
