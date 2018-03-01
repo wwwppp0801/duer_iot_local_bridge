@@ -1,0 +1,1 @@
+* * * * * if /usr/bin/[ "x$(/bin/ps aux|/bin/grep duer_iot_local_bridge|/bin/grep -v grep)" == "x" ];then cd /home/pi/Projects/duer_iot_local_bridge; /home/pi/.nvm/versions/node/v8.9.4/bin/node ../duer_iot_local_bridge/;fi
