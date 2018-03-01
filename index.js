@@ -141,7 +141,10 @@ function initConnection(){
     ]){
         socket.on(eventName,()=>{
             console.log("socket ",socket.id,eventName);
-            if(["connect","reconnect"].indexOf(eventName)!=-1){
+            if([
+                    "connect",
+                    //"reconnect", //重连也会触发connect事件，不然重复login了
+            ].indexOf(eventName)!=-1){
                 socket.emit("login",{key:getStorage().key});
             }
         });
