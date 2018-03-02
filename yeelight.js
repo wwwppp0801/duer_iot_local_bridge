@@ -142,7 +142,7 @@ class YeelightDevice extends EventEmitter{
     
     send(method,...args){
         //{ "id": 1, "method": "set_power", "params":["on", "smooth", 500]}
-        this.getConnectedPromise().then(()=>{
+        let realSend= (retry=true)=>{
             let cmd={
                 id:this.getId(),
                 method:method,
@@ -153,8 +153,13 @@ class YeelightDevice extends EventEmitter{
                 cmd.params=[];
             }
             console.log("send msg:",cmd);
-            this.socket.write(Buffer.from(JSON.stringify(cmd)+"\r\n"));
-        });
+            try{
+                this.socket.write(Buffer.from(JSON.stringify(cmd)+"\r\n"));
+            }catch(e){
+               realSend(false);
+            }
+        };
+        this.getConnectedPromise().then(realSend);
     }
     getConnectedPromise(){
         if(this.connectedPromise){
@@ -170,15 +175,24 @@ class YeelightDevice extends EventEmitter{
     }
     connect(host,port){
         this.connectedPromise=new Promise((resolve,reject)=>{
+            console.log("connect to ",host,port);
             this.setStatus("connecting");
             let socket = new net.Socket();
             socket.connect(port,host,()=>{
                 this.setStatus("connected");
                 resolve();
             });
-            socket.on("error",reject);
-            socket.on("close",reject);
-            socket.on("end",reject);
+            function onError(){
+                console.log("socket error!!!",host,port);
+                reject();
+                this.connectedPromise=Promise.reject();
+                setTimeout(()=>{
+                    this.connect(host,port);
+                },1000);
+            }
+            socket.on("error",onError);
+            socket.on("close",onError);
+            socket.on("end",onError);
             let my_carrier = carrier.carry(socket);
             my_carrier.on('line',(line)=>{
                 let ret;
