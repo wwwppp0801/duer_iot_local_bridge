@@ -161,6 +161,10 @@ function initConnection(){
     socket.on("login_fail",()=>{
         console.log("on login_fail!");
     });
+    socket.on("discover",async ()=>{
+        await YeelightController.getInstance().discover(1100);
+        updateDevicesToBotService();
+    });
     socket.on("command",(command)=>{
         console.log("on command",command);
         YeelightController.getInstance().getDevices().forEach(async (device)=>{
