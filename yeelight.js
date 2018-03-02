@@ -83,6 +83,11 @@ support: get_prop set_default set_power toggle set_bright start_cf stop_cf set_s
     }
     connect(deviceInfo){
         let device=YeelightDevice.create(deviceInfo);
+        device.on("error",()=>{
+            this.devices=this.devices.filter(d=>d!==device);
+            console.log("device error",device.getInfo());
+            this.emit("device_error",device);
+        });
         this.devices.push(device);
         this.emit("new_device",device);
         return device;
@@ -156,7 +161,9 @@ class YeelightDevice extends EventEmitter{
             try{
                 this.socket.write(Buffer.from(JSON.stringify(cmd)+"\r\n"));
             }catch(e){
-               realSend(false);
+                if(retry){
+                    realSend(false);
+                }
             }
         };
         this.getConnectedPromise().then(realSend);
@@ -183,12 +190,9 @@ class YeelightDevice extends EventEmitter{
                 resolve();
             });
             function onError(){
+                this.emit("error");
                 console.log("socket error!!!",host,port);
                 reject();
-                this.connectedPromise=Promise.reject();
-                setTimeout(()=>{
-                    this.connect(host,port);
-                },1000);
             }
             socket.on("error",onError);
             socket.on("close",onError);

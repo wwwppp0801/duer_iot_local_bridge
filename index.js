@@ -9,7 +9,10 @@ const utils = require("./utils");
 const io = require('socket.io-client');
 const YeelightController = require('./yeelight');
 
-
+YeelightController.getInstance().on("device_error",async ()=>{
+    await YeelightController.getInstance().discover(2000);
+    updateDevicesToBotService();
+});
 
 
 
