@@ -189,11 +189,11 @@ class YeelightDevice extends EventEmitter{
                 this.setStatus("connected");
                 resolve();
             });
-            function onError(){
+            let onError = ()=>{
                 this.emit("error");
                 console.log("socket error!!!",host,port);
                 reject();
-            }
+            };
             socket.on("error",onError);
             socket.on("close",onError);
             socket.on("end",onError);
