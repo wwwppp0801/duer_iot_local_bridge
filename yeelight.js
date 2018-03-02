@@ -39,6 +39,11 @@ class YeelightController extends EventEmitter{
             console.log(deviceInfo);
             this.connect(deviceInfo);
         });
+        setInterval(()=>{
+            this.devices.forEach((device)=>{
+                device.getActiveBright();
+            });
+        },30000);
     }
     getDevices(){
         return this.devices;
@@ -121,6 +126,14 @@ class YeelightDevice extends EventEmitter{
         this.deviceInfo=deviceInfo;
         this.setStatus("not_connect");
         this.connect(deviceInfo.host,deviceInfo.port);
+        this.on("error",()=>{
+            console.log("device error!!!");
+            this.connectedPromise=Promise.reject();
+            if(this.socket){
+                this.socket.removeAllListeners();
+                this.socket=null;
+            }
+        });
     }
     setInfo(deviceInfo){
         Object.assign(this.deviceInfo,deviceInfo);
@@ -147,7 +160,7 @@ class YeelightDevice extends EventEmitter{
     
     send(method,...args){
         //{ "id": 1, "method": "set_power", "params":["on", "smooth", 500]}
-        let realSend= (retry=true)=>{
+        let realSend= ()=>{
             let cmd={
                 id:this.getId(),
                 method:method,
@@ -161,9 +174,7 @@ class YeelightDevice extends EventEmitter{
             try{
                 this.socket.write(Buffer.from(JSON.stringify(cmd)+"\r\n"));
             }catch(e){
-                if(retry){
-                    realSend(false);
-                }
+                this.emit("error");
             }
         };
         this.getConnectedPromise().then(realSend);
@@ -191,8 +202,6 @@ class YeelightDevice extends EventEmitter{
             });
             let onError = ()=>{
                 this.emit("error");
-                console.log("socket error!!!",host,port);
-                reject();
             };
             socket.on("error",onError);
             socket.on("close",onError);
