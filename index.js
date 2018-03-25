@@ -186,22 +186,25 @@ function initConnection(){
                 //device.send("set_power","off");
                 let bright = await device.getActiveBright();
                 if(bright==100){
+                    //日光模式
                     device.send("set_power", "on","smooth", 500, 1);
+                    device.send("set_bright",0);
+                }else{
+                    device.send("set_bright",Math.min(bright+30,100));
                 }
-                device.send("set_bright",Math.min(bright+30,100));
             }
             if(command.request.header.name=="DecrementBrightnessPercentageRequest"){
                 //console.log("send power off");
                 //device.send("set_power","off");
                 let bright = await device.getActiveBright();
                 if(bright<=10){
+                    //月光模式
                     device.send("set_power", "on","smooth", 500, 5);
+                    device.send("set_bright",100);
+                }else{
+                    //device.send("set_scene","nightlight",100);
+                    device.send("set_bright",Math.max(bright-30,0));
                 }
-                
-                
-                //device.send("set_scene","nightlight",100);
-                
-                device.send("set_bright",Math.max(bright-30,0));
             }
         });
     });
